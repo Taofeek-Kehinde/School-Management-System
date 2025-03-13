@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SCHOOL MANAGEMENT SYSTEM</title>
+    <link rel="shortcut icon" href="images/bus-icon-12981.png" type="image/x-icon">
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        padding: 20px;
+        background-color: #efefef;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+      .container {
+        display: flex;
+        width: 700px;
+        box-shadow: 0 0 5px 5px #ccc;
+        border-radius: 10px;
+        overflow: hidden;
+        background: white;
+      }
+      .image-section {
+        width: 50%;
+        background-color: #ddd;
+      }
+      .image-section img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .form-section {
+        width: 50%;
+        padding: 20px;
+      }
+      h2 {
+        text-align: center;
+        font-family: sans-serif;
+        font-weight: 100;
+      }
+      input, select {
+        width: 90%;
+        padding: 15px;
+        font-size: 18px;
+        margin: 10px 0;
+        background-color: #efefef;
+        box-shadow: 0 0 2px 2px #cccc;
+        color: #000;
+        border-radius: 5px;
+      }
+      button {
+        width: 90%;
+        padding: 15px;
+        font-size: 18px;
+        margin: 10px 0;
+        background-color: rgb(46, 44, 44);
+        color: white;
+        cursor: pointer;
+        border-radius: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <!-- Left Side Image -->
+      <div class="image-section">
+        <img id="auth-image" src="images/pngimg.com - student_PNG62552.png" alt="Signup Image">
+      </div>
+
+      <!-- Right Side Forms -->
+      <div class="form-section">
+        <h2>School Management System</h2>
+        <div id="auth-section">
+          <button onclick="showForm('signup')">Signup</button>
+          <button onclick="showForm('login')">Login</button>
+        </div>
+
+        <div id="signup-form" style="display: none">
+          <h3>Signup</h3>
+          <input type="text" id="signup-name" placeholder="Full Name" required />
+          <input type="email" id="signup-email" placeholder="Email" required />
+          <input type="password" id="signup-password" placeholder="Password" required />
+          <select id="signup-role">
+            <option value="student">Student</option>
+            <option value="admin">Admin</option>
+          </select>
+          <button onclick="signup()">Register</button>
+        </div>
+
+        <div id="login-form" style="display: none">
+          <h3>Login</h3>
+          <input type="email" id="login-email" placeholder="Email" required />
+          <input type="password" id="login-password" placeholder="Password" required />
+          <button onclick="login()">Login</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function showForm(type) {
+  const authSection = document.getElementById("auth-section");
+  const signupForm = document.getElementById("signup-form");
+  const loginForm = document.getElementById("login-form");
+
+  authSection.innerHTML = type === "signup" 
+    ? '<button onclick="showForm(\'login\')">Login</button>' 
+    : '<button onclick="showForm(\'signup\')">Signup</button>';
+
+  signupForm.style.display = type === "signup" ? "block" : "none";
+  loginForm.style.display = type === "login" ? "block" : "none";
+
+  const authImage = document.getElementById("auth-image");
+  authImage.src = type === "signup" ? "images/girl-160172_1280.png" : "images/school-icon-png-14040.png";
+}
+
+    
+      async function signup() {
+        const name = document.getElementById("signup-name").value.trim();
+        const email = document.getElementById("signup-email").value.trim();
+        const password = document.getElementById("signup-password").value.trim();
+        const role = document.getElementById("signup-role").value;
+    
+        if (!name || !email || !password) {
+          alert("Please fill in all the fields.");
+          return;
+        }
+    
+        try {
+          const response = await fetch("http://localhost:7000/signup", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name, email, password, role }),
+          });
+    
+          const data = await response.json();
+          alert(data.message);
+    
+          if (response.ok) {
+            window.location.href = "login.html";
+          }
+        } catch (error) {
+          console.error("Error:", error);
+          alert("Something went wrong. Try again.");
+        }
+      }
+    
+      async function login() {
+  const email = document.getElementById("login-email").value.trim();
+  const password = document.getElementById("login-password").value.trim();
+
+  if (!email || !password) {
+    alert("Please enter your email and password.");
+    return;
+  }
+
+  try {
+    const response = await fetch("http://localhost:7000/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      // Store role in local storage (optional)
+      localStorage.setItem("userRole", data.role);
+
+      // Redirect based on role
+      if (data.role === "admin") {
+        window.location.href = "admin.html"; // Redirect to Admin Page
+      } else {
+        window.location.href = "index.html"; // Redirect to Student Page
+      }
+    } else {
+      alert(data.message);
+    }
+  } catch (error) {
+    console.error("Error:", error);
+    alert("Something went wrong. Try again.");
+  }
+}
+
+    </script>
+    
+  </body>
+</html>

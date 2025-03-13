@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SChool Management System</title>
+    <link rel="shortcut icon" href="images/bus-icon-12981.png" type="image/x-icon">
+    <style>
+        
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #efefef;
+            text-align: center;
+        }
+        h1 {
+            font-family: sans-serif;
+            font-weight: 100;
+        }
+        form {
+            background: white;
+            padding: 20px;
+            max-width: 600px; 
+            margin: 130px auto;
+            box-shadow: 0 0 5px 5px #ccc;
+            border-radius: 10px;
+        }
+
+        input, button {
+            width: 95%; 
+            padding: 12px;
+            margin: 10px 0;
+            box-shadow: 0 0 1px 1px #efefef;
+            outline: none;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        button {
+            background: rgb(46, 44, 44);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background: #222;
+        }
+
+        /* Subject List */
+        #subjectList {
+            list-style: none;
+            padding: 0;
+            max-width: 700px; /* Wider subject list */
+            margin: auto;
+        }
+
+        #subjectList li {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1);
+            text-align: left;
+            font-size: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .subject-info {
+            flex-grow: 1;
+        }
+
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .delete-btn:hover {
+            background: #c82333;
+        }
+
+        
+        @media (max-width: 800px) {
+            form, #subjectList {
+                width: 80%;
+            }
+        }
+
+        @media (max-width: 500px) {
+            form {
+                padding: 15px;
+            }
+
+            input, button {
+                font-size: 14px;
+                padding: 10px;
+            }
+
+            #subjectList li {
+                font-size: 14px;
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .delete-btn {
+                margin-top: 5px;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    
+    <form id="subjectForm">
+        <h1> Add Subject</h1>
+        <input type="text" id="name" placeholder="Subject Name" required>
+        <input type="text" id="code" placeholder="Subject Code" required>
+        <input type="text" id="description" placeholder="Description">
+        <input type="text" id="prerequisite" placeholder="Prerequisite">
+        <button type="submit">Add Subject</button>
+    </form>
+
+    <script>
+        document.getElementById("subjectForm").addEventListener("submit", async function(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById("name").value;
+            const code = document.getElementById("code").value;
+            const description = document.getElementById("description").value;
+            const prerequisite = document.getElementById("prerequisite").value;
+
+            const response = await fetch("http://localhost:7000/add-subject", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name, code, description, prerequisite })
+            });
+
+            if (response.ok) {
+                alert("Subject added successfully!");
+                loadSubjects();
+            } else {
+                alert("Error adding subject");
+            }
+        });
+
+        async function loadSubjects() {
+            const response = await fetch("http://localhost:7000/subjects");
+            const subjects = await response.json();
+            const subjectList = document.getElementById("subjectList");
+            subjectList.innerHTML = "";
+            
+            subjects.forEach(subject => {
+                const li = document.createElement("li");
+
+                li.innerHTML = `
+                    <div class="subject-info">
+                        <strong>${subject.name} (${subject.code})</strong><br>
+                        <em>${subject.description || "No description"}</em><br>
+                        <small>Prerequisite: ${subject.prerequisite || "None"}</small>
+                    </div>
+                    <button class="delete-btn" onclick="deleteSubject('${subject._id}')">Delete</button>
+                `;
+
+                subjectList.appendChild(li);
+            });
+        }
+
+        async function deleteSubject(id) {
+            const response = await fetch(`http://localhost:7000/delete-subject/${id}`, {
+                method: "DELETE"
+            });
+
+            if (response.ok) {
+                alert("Subject deleted successfully!");
+                loadSubjects();
+            } else {
+                alert("Error deleting subject");
+            }
+        }
+
+        loadSubjects();
+    </script>
+
+</body>
+</html>

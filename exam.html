@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SCHOOL MANAGEMENT SYSTEM</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background: #efefef;
+      }
+
+      .container {
+        width: 90%;
+        max-width: 600px;
+        margin: 100px auto;
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 5px 5px #ccc;
+      }
+
+      h1 {
+        text-align: center;
+        font-family: sans-serif;
+        font-weight: 100;
+      }
+
+      input {
+            box-shadow: 0 0 1px 1px #ccc;
+         }
+
+      input,
+      button {
+        width: 100%;
+        padding: 15px;
+        margin: 8px 0;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        box-sizing: border-box;
+      }
+
+      button {
+        background: #333;
+        color: white;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background: #555;
+      }
+
+      .exam-list {
+        margin-top: 20px;
+      }
+
+      .exam-card {
+        background: #fff;
+        padding: 15px;
+        border-radius: 10px;
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        margin-bottom: 15px;
+      }
+
+      @media screen and (max-width: 768px) {
+        .container {
+          width: 95%;
+          padding: 15px;
+        }
+
+        h1 {
+          font-size: 1.5rem;
+        }
+        input,
+        button {
+          padding: 12px;
+          font-size: 1rem;
+        }
+
+        .exam-card {
+          padding: 12px;
+        }
+      }
+
+      @media screen and (max-width: 480px) {
+        .container {
+          width: 85%;
+          padding: 15px;
+        }
+
+        h1 {
+          font-size: 1.3rem;
+        }
+
+        input,
+        button {
+          padding: 10px;
+          font-size: 0.9rem;
+        }
+
+        .exam-card {
+          padding: 10px;
+        }
+
+        .exam-list {
+          margin-top: 15px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Exam Score</h1>
+
+      <input type="text" id="exam_name" placeholder="Exam Name" required />
+      <input type="text" id="subject" placeholder="Subject" required />
+      <input type="date" id="date" placeholder="Date" required />
+      <input
+        type="text"
+        id="duration"
+        placeholder="Duration (e.g. 2 hours)"
+        required
+      />
+      <input
+        type="number"
+        id="max_marks"
+        placeholder="Score"
+        required
+      />
+      <button onclick="addExam()">Add Exam</button>
+      <div class="exam-list" id="exam-list"></div>
+    </div>
+
+    <script>
+      const API_URL = "http://localhost:7000";
+
+      async function addExam() {
+        const exam = {
+          exam_name: document.getElementById("exam_name").value,
+          subject: document.getElementById("subject").value,
+          date: document.getElementById("date").value,
+          duration: document.getElementById("duration").value,
+          max_marks: document.getElementById("max_marks").value,
+        };
+
+        const response = await fetch(`${API_URL}/exams`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(exam),
+        });
+
+        const data = await response.json();
+        if (response.ok) {
+          alert("Exam added successfully!");
+          loadExams();
+        } else {
+          alert(data.message || "Error adding exam");
+        }
+      }
+
+      async function loadExams() {
+        const response = await fetch(`${API_URL}/exams`);
+        const exams = await response.json();
+        displayExams(exams);
+      }
+
+      function displayExams(exams) {
+        const examList = document.getElementById("exam-list");
+        examList.innerHTML = "";
+
+        exams.forEach((exam) => {
+          examList.innerHTML += `
+                    <div class="exam-card">
+                        <h4>${exam.exam_name} (${exam.subject})</h4>
+                        <p>Date: ${exam.date}</p>
+                        <p>Duration: ${exam.duration}</p>
+                        <p>Maximum Marks: ${exam.max_marks}</p>
+                    </div>
+                `;
+        });
+      }
+
+      window.onload = loadExams;
+    </script>
+  </body>
+</html>

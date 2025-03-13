@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCHOOL MANAGEMENT SYSTEM</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #efefef;
+            text-align: center;
+        }
+    
+        .container {
+            width: 90%;
+            max-width: 700px;
+            margin: 100px auto;
+            background: white;
+            padding: 20px;
+            box-shadow: 0 0 5px 5px #ccc;
+            border-radius: 10px;
+        }
+    
+        input {
+            margin: 10px;
+            padding: 15px;
+            width: 100%;
+            box-shadow: 0 0 1px 1px #ccc;
+        }
+      button {
+            margin: 10px;
+            padding: 12px;
+            
+      }
+        h1, h2 {
+            color: #333;
+            font-family: sans-serif;
+            font-weight: 100;
+        }
+    
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+            overflow-x: auto;
+        }
+    
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+    
+        th {
+            background-color: #f8f9fa;
+        }
+    
+        button {
+            background: rgb(46, 44, 44);
+            color: white;
+            border: none;
+            height: 50px;
+            border-radius: 5px;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 8px 16px;
+        }
+    
+        button:hover {
+            background: #222;
+        }
+    
+
+        @media (max-width: 768px) {
+            table, thead, tbody, th, td, tr {
+                display: block;
+                width: 100%;
+            }
+    
+            th {
+                text-align: left;
+            }
+    
+            td {
+                text-align: right;
+                padding-left: 50%;
+                position: relative;
+            }
+    
+            td:before {
+                content: attr(data-label);
+                position: absolute;
+                left: 0;
+                padding-left: 10px;
+                font-weight: bold;
+            }
+    
+            button {
+                width: 100%;
+                padding: 12px;
+            }
+        }
+    
+
+        input[type="text"],
+        input[type="number"],
+        button {
+            width: 90%;
+            max-width: 400px;
+        }
+    
+        input[type="text"]:focus,
+        input[type="number"]:focus {
+            outline: none;
+            border: 2px solid #222;
+        }
+    </style>
+    
+</head>
+<body>
+
+    <div class="container">
+        <h1>Student Grades</h1>
+        <form id="gradeForm">
+            <input type="text" id="studentId" placeholder="Student ID" required>
+            <input type="text" id="subject" placeholder="Subject" required>
+            <input type="text" id="assessment" placeholder="Assessment Type" required>
+            <input type="number" id="score" placeholder="Score" required>
+            <button type="submit">Add Grade</button>
+        </form>
+
+
+        <!-- <h2>View Student Grades</h2> -->
+        <!-- <input type="text" id="searchStudentId" placeholder="Enter Student ID"> -->
+        <!-- <button onclick="fetchGrades()">View Grades</button>
+        <table>
+            <thead>
+                <tr>
+                    <th>Subject</th>
+                    <th>Assessment</th>
+                    <th>Score</th>
+                    <th>Grade</th>
+                    <th>Actions</th> 
+                </tr>
+            </thead>
+            <tbody id="gradesTable"></tbody>
+        </table>-->
+    </div>
+
+    <script>
+ 
+        document.getElementById("gradeForm").addEventListener("submit", async function(event) {
+            event.preventDefault();
+
+            const studentId = document.getElementById("studentId").value;
+            const subject = document.getElementById("subject").value;
+            const assessment = document.getElementById("assessment").value;
+            const score = document.getElementById("score").value;
+
+            try {
+                const response = await fetch("http://localhost:7000/grades", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ studentId, subject, assessment, score })
+                });
+
+                if (!response.ok) {
+                    throw new Error("Failed to add grade");
+                }
+
+                alert("Grade added successfully!");
+                document.getElementById("gradeForm").reset();
+                fetchGrades();
+            } catch (error) {
+                console.error("Error:", error);
+                alert("Error adding grade.");
+            }
+        });
+
+ 
+        async function fetchGrades() {
+            const studentId = document.getElementById("searchStudentId").value;
+            if (!studentId) {
+                alert("Please enter a Student ID.");
+                return;
+            }
+
+            try {
+                const response = await fetch(`http://localhost:7000/grades/${studentId}`);
+                if (!response.ok) {
+                    throw new Error("Failed to fetch grades");
+                }
+
+                const grades = await response.json();
+                const gradesTable = document.getElementById("gradesTable");
+                gradesTable.innerHTML = "";
+
+                grades.forEach(grade => {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                        <td>${grade.subject}</td>
+                        <td>${grade.assessment}</td>
+                        <td>${grade.score}</td>
+                        <td>${grade.grade}</td>
+                       
+                    `;
+                    gradesTable.appendChild(row);
+                });
+            } catch (error) {
+                console.error("Error:", error);
+                alert("Error fetching grades.");
+            }
+        }
+
+        // Delete a grade
+        async function deleteGrade(id) {
+            try {
+                const response = await fetch(`http://localhost:7000/grades/${id}`, {
+                    method: "DELETE",
+                });
+
+                if (!response.ok) {
+                    throw new Error("Failed to delete grade");
+                }
+
+                alert("Grade deleted successfully!");
+                fetchGrades();
+            } catch (error) {
+                console.error("Error:", error);
+                alert("Error deleting grade.");
+            }
+        }
+    </script>
+
+</body>
+</html>

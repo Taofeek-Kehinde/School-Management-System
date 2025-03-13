@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCHOOL MANAGEMENT SYSTEM</title>
+    <link rel="shortcut icon" href="images/bus-icon-12981.png" type="image/x-icon">
+    <style>
+        body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: #efefef;
+}
+
+.container {
+    width: 90%;
+    max-width: 600px;
+    margin: 30px auto;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 5px 5px #cccc;
+}
+
+h1 {
+    text-align: center;
+    font-family: sans-serif;
+    font-weight: 100;
+}
+
+input {
+    box-shadow: 0 0 1px 1px #ccc;
+    outline: none;
+}
+ 
+input, button {
+    width: 100%;
+    padding: 15px;
+    margin: 8px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box; 
+}
+
+button {
+    background: #333;
+    color: white;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #555;
+}
+
+.book-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.book-card {
+    background: #fff;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.book-card h4 {
+    margin-bottom: 5px;
+}
+/* input:invalid {
+    border-color: red; 
+} */
+
+.error-message {
+    color: red;
+    font-size: 12px;
+}
+
+
+@media (max-width: 600px) {
+    .container {
+        width: 85%; 
+    }
+
+    input, button {
+        width: 100%; 
+        margin: 8px auto; 
+    }
+
+    .book-list {
+        grid-template-columns: 1fr; 
+    }
+}
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Enter Textbook Details</h1>
+        <input type="text" id="title" placeholder="Title" required>
+        <input type="text" id="author" placeholder="Author" required>
+        <input type="text" id="edition" placeholder="Edition">
+        <input type="text" id="subject" placeholder="Subject" required>
+        <input type="text" id="isbn" placeholder="ISBN" required>
+        <input type="text" id="publisher" placeholder="Publisher">
+        <input type="number" id="quantity" placeholder="Quantity" required>
+        <button onclick="addBook()">Add Book</button>
+
+        <!-- <h3>Search Books</h3>
+        <input type="text" id="search" placeholder="Search by Title, Author, Subject" onkeyup="searchBooks()"> -->
+
+        <div class="book-list" id="book-list"></div>
+    </div>
+
+    <script>
+        const API_URL = "http://localhost:7000";
+
+        async function addBook() {
+
+    const title = document.getElementById("title").value;
+    const author = document.getElementById("author").value;
+    const edition = document.getElementById("edition").value;
+    const subject = document.getElementById("subject").value;
+    const isbn = document.getElementById("isbn").value;
+    const publisher = document.getElementById("publisher").value;
+    const quantity = document.getElementById("quantity").value;
+
+    if (!title || !author || !subject || !isbn || !quantity) {
+        alert("Please fill in all required fields: Title, Author, Subject, ISBN, and Quantity.");
+        return; 
+    }
+
+    const book = {
+        title,
+        author,
+        edition,
+        subject,
+        isbn,
+        publisher,
+        quantity
+    };
+
+    const response = await fetch(`${API_URL}/add-book`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(book)
+    });
+
+    const data = await response.json();
+    alert(data.message);
+    // loadBooks(); 
+}
+
+
+function displayBooks(books) {
+    const bookList = document.getElementById("book-list");
+    bookList.innerHTML = ""; 
+    books.forEach(book => {
+        bookList.innerHTML += `
+            <div class='book-card'>
+                <h4>${book.title} (${book.edition})</h4>
+                <p>Author: ${book.author}</p>
+                <p>Subject: ${book.subject}</p>
+                <p>ISBN: ${book.isbn}</p>
+                <p>Publisher: ${book.publisher}</p>
+                <p>Quantity: ${book.quantity}</p>
+                <button onclick="deleteBook('${book._id}')">Delete</button>
+            </div>`;
+    });
+}
+
+async function deleteBook(id) {
+    await fetch(`${API_URL}/delete-book/${id}`, { method: "DELETE" });
+    alert("Book deleted successfully");
+    loadBooks();
+}
+
+function searchBooks() {
+    const searchText = document.getElementById("search").value.toLowerCase();
+    const filteredBooks = allBooks.filter(book =>
+        book.title.toLowerCase().includes(searchText) ||
+        book.author.toLowerCase().includes(searchText) ||
+        book.subject.toLowerCase().includes(searchText)
+    );
+    displayBooks(filteredBooks); 
+}
+
+// loadBooks();
+    </script>
+</body>
+</html>

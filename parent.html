@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCHOOL MANAGEMENT SYSTEM</title>
+    <link rel="shortcut icon" href="images/bus-icon-12981.png" type="image/x-icon">
+    <style>
+        body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+    background: #efefef;
+}
+
+.container {
+    max-width: 600px; 
+    width: 90%;
+    margin: 50px auto;
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 0 5px 5px #ccc;
+}
+h1 {
+    color: #333;
+    font-family: sans-serif;
+    font-weight: 100;
+}
+input {
+    width: 90%;
+    padding: 14px;
+    box-shadow: 0 0 1px 1px #ccc;
+    margin: 12px 0;
+    outline: none;
+    border: 1px solid #bbb;
+    border-radius: 6px;
+    font-size: 16px;
+}
+ select{
+    width: 95%;
+    padding: 15px;
+    margin: 12px 0;
+    border: 1px solid #bbb;
+    border-radius: 6px;
+    font-size: 16px;
+}
+
+button {
+    width: 90%;
+    padding: 20px;
+    margin: 12px 0;
+    border: 1px solid #bbb;
+    border-radius: 6px;
+    font-size: 16px;  
+}
+button {
+    background: #333;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 17px;
+    font-weight: bold;
+    padding: 14px;
+    transition: 0.3s;
+}
+
+button:hover {
+    background: #111;
+}
+
+/* Parent list container */
+.parent-list {
+    margin-top: 25px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+}
+
+/* Parent card */
+.card {
+    border: 1px solid #bbb;
+    padding: 18px;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    width: calc(50% - 20px); /* 2 cards per row on large screens */
+    min-width: 280px; /* Ensures minimum size */
+    text-align: left;
+}
+
+/* Error message */
+.error {
+    color: red;
+    font-size: 14px;
+    margin-top: -6px;
+    margin-bottom: 10px;
+    display: none;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .container {
+        width: 85%;
+        padding: 20px;
+    }
+    
+    .card {
+        width: 100%; /* Make cards full width on smaller screens */
+    }
+}
+
+        
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Parent Details Only</h1>
+        <form id="add-parent-form">
+            <input type="text" id="parent-name" placeholder="Full Name" required>
+            <span class="error" id="name-error">Name is required</span>
+
+            <input type="tel" id="parent-phone" placeholder="Phone Number" required>
+            <span class="error" id="phone-error">Valid phone number is required</span>
+
+            <input type="email" id="parent-email" placeholder="Email" required>
+            <span class="error" id="email-error">Valid email is required</span>
+
+            <input type="text" id="parent-address" placeholder="Address" required>
+            <span class="error" id="address-error">Address is required</span>
+
+            <select id="parent-relationship">
+                <option value="">Select Relationship</option>
+                <option value="Father">Father</option>
+                <option value="Mother">Mother</option>
+                <option value="Guardian">Guardian</option>
+            </select>
+            <span class="error" id="relationship-error">Select a relationship</span>
+
+            <button type="submit">Add Parent</button>
+        </form>
+
+        <h3>Link Parent to Student</h3>
+        <form id="link-parent-form">
+            <input type="text" id="student-id" placeholder="Student ID" required>
+            <span class="error" id="student-error">Student ID is required</span>
+
+            <input type="text" id="parent-id" placeholder="Parent ID" required>
+            <span class="error" id="parent-id-error">Parent ID is required</span>
+
+            <button type="submit">Link Parent</button>
+        </form>
+
+        <!-- <h3>Parent List</h3>
+        <div class="parent-list" id="parent-list">Loading...</div> -->
+    </div>
+    
+    <script>
+        document.getElementById("add-parent-form").addEventListener("submit", async function(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById("parent-name").value.trim();
+            const phone = document.getElementById("parent-phone").value.trim();
+            const email = document.getElementById("parent-email").value.trim();
+            const address = document.getElementById("parent-address").value.trim();
+            const relationship = document.getElementById("parent-relationship").value;
+
+        
+            document.querySelectorAll(".error").forEach(el => el.style.display = "none");
+            if (!name) return showError("name-error");
+            if (!phone) return showError("phone-error");
+            if (!email) return showError("email-error");
+            if (!address) return showError("address-error");
+            if (!relationship) return showError("relationship-error");
+
+            const response = await fetch("http://localhost:7000/parents", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name, contact: phone, email, address, relationship })
+            });
+
+            const data = await response.json();
+            alert(data.message);
+            loadParents();
+        });
+
+        document.getElementById("link-parent-form").addEventListener("submit", async function(event) {
+            event.preventDefault();
+            
+            const studentId = document.getElementById("student-id").value.trim();
+            const parentId = document.getElementById("parent-id").value.trim();
+
+            // Validation
+            document.querySelectorAll(".error").forEach(el => el.style.display = "none");
+            if (!studentId) return showError("student-error");
+            if (!parentId) return showError("parent-id-error");
+
+            const response = await fetch("http://localhost:7000/link-parent-student", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ studentId, parentId })
+            });
+
+            const data = await response.json();
+            alert(data.message);
+        });
+
+        async function loadParents() {
+            const response = await fetch("http://localhost:7000/parents");
+            const parents = await response.json();
+            // const parentList = document.getElementById("parent-list");
+            parentList.innerHTML = "";
+
+            if (parents.length === 0) {
+                parentList.innerHTML = "<p>No parents found.</p>";
+                return;
+            }
+
+            parents.forEach(parent => {
+                parentList.innerHTML += `
+                    <div class='card'>
+                        <h4>${parent.name}</h4>
+                        <p><strong>Relationship:</strong> ${parent.relationship}</p>
+                        <p><strong>Phone:</strong> ${parent.contact}</p>
+                        <p><strong>Email:</strong> ${parent.email}</p>
+                        <p><strong>Address:</strong> ${parent.address}</p>
+                    </div>`;
+            });
+        }
+
+        function showError(id) {
+            document.getElementById(id).style.display = "block";
+        }
+
+        loadParents();
+    </script>
+</body>
+</html>

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCHOOL MANAGEMENT SYSTEM</title>
+    <link rel="shortcut icon" href="images/bus-icon-12981.png" type="image/x-icon">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        body {
+            background-color: #efefef;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            width: 90%;
+            max-width: 600px;
+            background: white;
+            padding: 20px;
+            margin: 15px;
+            border-radius: 10px;
+            box-shadow: 0 0 4px 4px #ccc;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        input, select, textarea, button {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button {
+            background-color: rgb(46, 44, 44);
+            color: white;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #222;
+        }
+    </style>
+</head>
+<body>
+  
+    <div class="container">
+        <h1>Lecture Details</h1>
+        <input type="date" id="start-date" placeholder="Start Date">
+        <input type="date" id="end-date" placeholder="End Date">
+        <input type="time" id="start-time" placeholder="Start Time">
+        <input type="time" id="end-time" placeholder="End Time">
+        <input type="text" id="days" placeholder="Days (e.g. Mon, Wed, Fri)">
+        <button onclick="createLecture()">Create</button>
+        <button onclick="cancelLecture()">Cancel</button>
+    </div>
+
+    <div class="container">
+        <h1>Faculty Details</h1>
+        <input type="text" id="faculty-name" placeholder="Name">
+        <input type="text" id="faculty-contact" placeholder="Contact No">
+        <input type="email" id="faculty-email" placeholder="Email">
+        <select id="faculty-lecture">
+            <option value="">Select Subject</option>
+            <option value="Java">Java</option>
+            <option value="C#">C#</option>
+            <option value="Python">Python</option>
+        </select>
+        <button onclick="saveFaculty()">Save Faculty</button>
+    </div>
+
+    <div class="container">
+        <h1>Add Event</h1>
+        <input type="text" id="event-name" placeholder="Event Name">
+        <textarea id="event-description" placeholder="Description"></textarea>
+        <input type="date" id="event-date">
+        <button onclick="addEvent()">Add Event</button>
+    </div>
+
+    <script>
+        async function createLecture() {
+            const lecture = {
+                startDate: document.getElementById('start-date').value,
+                endDate: document.getElementById('end-date').value,
+                startTime: document.getElementById('start-time').value,
+                endTime: document.getElementById('end-time').value,
+                days: document.getElementById('days').value
+            };
+
+            if (!lecture.startDate || !lecture.endDate || !lecture.startTime || !lecture.endTime || !lecture.days) {
+                alert("All fields are required!");
+                return;
+            }
+
+            const response = await fetch('http://localhost:7000/add-lecture', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(lecture)
+            });
+
+            const data = await response.json();
+            alert(data.message);
+        }
+
+        function cancelLecture() {
+            document.getElementById('start-date').value = "";
+            document.getElementById('end-date').value = "";
+            document.getElementById('start-time').value = "";
+            document.getElementById('end-time').value = "";
+            document.getElementById('days').value = "";
+            alert("Lecture cancelled.");
+        }
+
+        async function saveFaculty() {
+    const faculty = {
+        name: document.getElementById('faculty-name').value.trim(),
+        contact: document.getElementById('faculty-contact').value.trim(),
+        email: document.getElementById('faculty-email').value.trim(),
+        lecture: document.getElementById('faculty-lecture').value.trim() // Fix: Use "lecture" instead of "selectedSubject"
+    };
+
+    if (!faculty.name || !faculty.contact || !faculty.email || !faculty.lecture) {
+        alert("All fields are required!");
+        return;
+    }
+
+    try {
+        const response = await fetch('http://localhost:7000/add-faculty', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(faculty)
+        });
+
+        const data = await response.json();
+        alert(data.message);
+    } catch (error) {
+        alert("Error saving faculty. Please try again.");
+        console.error("Save Faculty Error:", error);
+    }
+}
+
+
+        async function addEvent() {
+            const event = {
+                eventName: document.getElementById('event-name').value,
+                description: document.getElementById('event-description').value,
+                date: document.getElementById('event-date').value
+            };
+
+            if (!event.eventName || !event.description || !event.date) {
+                alert("All fields are required!");
+                return;
+            }
+
+            const response = await fetch('http://localhost:7000/add-event', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(event)
+            });
+
+            const data = await response.json();
+            alert(data.message);
+        }
+    </script>
+
+</body>
+</html>

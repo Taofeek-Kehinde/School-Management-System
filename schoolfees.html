@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCHOOL MANAGEMENT SYSTEM</title>
+    <link rel="shortcut icon" href="images/bus-icon-12981.png" type="image/x-icon">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #efefef;
+            padding: 20px;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 800px;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 5px 5px #ccc;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-family: sans-serif;
+            font-weight: 100;
+        }
+  h3 {
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: 100;
+  }
+        label {
+            font-family: sans-serif;
+            font-weight: 100;
+            display: block;
+            margin-top: 10px;
+        }
+
+        input {
+            box-shadow: 0 0 1px 1px #ccc;
+        }
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            background: rgb(46, 44, 44) ;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+
+        button:hover {
+            background: #222;
+        }
+
+        .response {
+            margin-top: 15px;
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>School Fees Management</h1>
+
+    <h3>Check Payment Status</h3>
+    <label for="checkStudentId">Student ID:</label>
+    <input type="text" id="checkStudentId" placeholder="Enter Student ID">
+    <button onclick="checkPayment()">Check Payment</button>
+    <div class="response" id="checkResponse"></div>
+
+    <hr>
+
+
+    <h3>Add Payment</h3>
+    <label for="studentId">Student ID:</label>
+    <input type="text" id="studentId" placeholder="Enter Student ID">
+
+    <label for="paymentStatus">Payment Status:</label>
+    <select id="paymentStatus">
+        <option value="Paid">Paid</option>
+        <option value="Pending">Pending</option>
+        <option value="Overdue">Overdue</option>
+    </select>
+
+    <label for="paymentMethod">Payment Method:</label>
+    <select id="paymentMethod">
+        <option value="Cash">Cash</option>
+        <option value="Bank Transfer">Bank Transfer</option>
+        <option value="Online Payment">Online Payment</option>
+        <option value="Mobile Money">Mobile Money</option>
+    </select>
+
+    <label for="amountPaid">Amount Paid:</label>
+    <input type="number" id="amountPaid" placeholder="Enter Amount">
+
+    <button onclick="addPayment()">Submit Payment</button>
+
+    <div class="response" id="responseMessage"></div>
+</div>
+
+<script>
+    // Check if student has paid
+    function checkPayment() {
+        const studentId = document.getElementById("checkStudentId").value;
+        if (!studentId) {
+            document.getElementById("checkResponse").innerHTML = " Please enter a Student ID!";
+            document.getElementById("checkResponse").style.color = "red";
+            return;
+        }
+
+        fetch(`http://localhost:7000/check-payment/${studentId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                document.getElementById("checkResponse").innerHTML = " " + data.error;
+                document.getElementById("checkResponse").style.color = "red";
+            } else {
+                document.getElementById("checkResponse").innerHTML = ` Status: ${data.status}, Method: ${data.method}, Amount: ${data.amountPaid}`;
+                document.getElementById("checkResponse").style.color = "green";
+            }
+        })
+        .catch(error => {
+            document.getElementById("checkResponse").innerHTML = " Error fetching payment status.";
+            document.getElementById("checkResponse").style.color = "red";
+        });
+    }
+
+    // Add payment
+    function addPayment() {
+        const studentId = document.getElementById("studentId").value;
+        const paymentStatus = document.getElementById("paymentStatus").value;
+        const paymentMethod = document.getElementById("paymentMethod").value;
+        const amountPaid = document.getElementById("amountPaid").value;
+
+        if (!studentId || !amountPaid) {
+            document.getElementById("responseMessage").innerHTML = " Please fill all fields!";
+            document.getElementById("responseMessage").style.color = "red";
+            return;
+        }
+
+        fetch("http://localhost:7000/add-payment", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ studentId, paymentStatus, paymentMethod, amountPaid })
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById("responseMessage").innerHTML = data.message || data.error;
+            document.getElementById("responseMessage").style.color = data.message ? "green" : "red";
+        })
+        .catch(error => {
+            document.getElementById("responseMessage").innerHTML = " Error: Failed to add payment";
+            document.getElementById("responseMessage").style.color = "red";
+        });
+    }
+</script>
+
+</body>
+</html>
